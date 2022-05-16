@@ -3,6 +3,7 @@ import app from '../server'
 
 app.get('/', handleGetHome)
 app.post('/upload', handlePostVideo)
+app.post('/video/:id', handleFindVideo)
 
 async function handleGetHome(req, res) {
   try {
@@ -15,14 +16,30 @@ async function handleGetHome(req, res) {
 
 async function handlePostVideo(req, res) {
   const { title, description, hashtags } = req.body
-  await VideoModel.create({
-    title,
-    description,
-    hashtags: hashtags.split(',').map((word) => `#${word}`),
-    createdAt: Date.now(),
-    meta: {
-      views: 0,
-    },
-  })
-  return res.send('비디오 생성 완료!')
+  try {
+    await VideoModel.create({
+      title,
+      description,
+      hashtags: hashtags.split(',').map((word) => `#${word}`),
+    })
+    return res.send({
+      result: 'success',
+    })
+  } catch (e) {
+    console.log(e)
+    return res.send({
+      result: 'failed',
+      message: e._message,
+    })
+  }
+}
+
+async function handleFindVideo(req, res) {
+  const { id } = req.body
+  try {
+    const video = await VideoModel.findById(id)
+    return res.send(video)
+  } catch (e) {
+    return res.send(e)
+  }
 }
