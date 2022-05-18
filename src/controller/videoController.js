@@ -7,7 +7,7 @@ const getFindAllVideos = async (req, res) => {
     const videos = await VideoModel.find({})
     return res.send(videos)
   } catch (e) {
-    return res.send({ result: 'failed', message: e._message })
+    return res.status(400).send({ result: 'failed' })
   }
 }
 const postFindVideo = async (req, res) => {
@@ -16,7 +16,7 @@ const postFindVideo = async (req, res) => {
     const video = await VideoModel.findById(id)
     return res.send(video)
   } catch (e) {
-    return res.send(e)
+    return res.status(400).send(e)
   }
 }
 const postUploadVideo = async (req, res) => {
@@ -31,9 +31,8 @@ const postUploadVideo = async (req, res) => {
       result: 'success',
     })
   } catch (e) {
-    return res.send({
+    return res.status(400).send({
       result: 'failed',
-      message: e._message,
     })
   }
 }
@@ -48,9 +47,8 @@ const postEditVideo = async (req, res) => {
     res.send({ result: 'success' })
   } catch (e) {
     console.log(e)
-    return res.send({
+    return res.status(400).send({
       result: 'failed',
-      message: e._message,
     })
   }
 }
@@ -62,9 +60,8 @@ const postDeleteVideo = async (req, res) => {
       result: 'success',
     })
   } catch (e) {
-    return res.send({
+    return res.status(400).send({
       result: 'failed',
-      message: e._message,
     })
   }
 }
@@ -82,9 +79,8 @@ const postSearchVideo = async (req, res) => {
     })
   } catch (e) {
     console.log(e)
-    return res.send({
+    return res.status(400).send({
       result: 'failed',
-      message: e._message,
     })
   }
 }

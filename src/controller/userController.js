@@ -1,9 +1,24 @@
 import UserModel from '../models/User'
 import app from '../server'
+import bcrypt from 'bcrypt'
 
 const postJoin = async (req, res) => {
   const { email, username, password } = req.body
   try {
+    const emailExists = await UserModel.exists({ email })
+    const usernameExists = await UserModel.exists({ username })
+    if (emailExists) {
+      return res.status(400).send({
+        result: 'failed',
+        message: 'duplicated email',
+      })
+    }
+    if (usernameExists) {
+      return res.status(400).send({
+        result: 'failed',
+        message: 'duplicated username',
+      })
+    }
     await UserModel.create({
       email,
       username,
@@ -15,13 +30,26 @@ const postJoin = async (req, res) => {
   } catch (e) {
     return res.send({
       result: 'failed',
-      message: e._message,
     })
   }
 }
-const postLogin = (req, res) => {
-  console.log(req.body)
-  return res.send('로그인 완료')
+const postLogin = async (req, res) => {
+  const { email, password } = req.body
+  try {
+    const dbUserData = await UserModel.findOne({ email })
+    const passwordCheck = await bcrypt.compare(password, dbUserData.password)
+    if (dbUserData) {
+      if (passwordCheck) {
+        req.session.loggedIn = true
+        req.session.user = dbUserData
+        res.send({ result: 'success' })
+      }
+    }
+  } catch (e) {
+    return res.send({
+      result: 'failed',
+    })
+  }
 }
 
 app.post('/join', postJoin)
