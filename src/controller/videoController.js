@@ -69,9 +69,30 @@ const postDeleteVideo = async (req, res) => {
     })
   }
 }
+const postSearchVideo = async (req, res) => {
+  const { keyword } = req.body
+  try {
+    const videos = await VideoModel.find({
+      title: {
+        $regex: new RegExp(keyword, 'i'),
+      },
+    })
+    return res.send({
+      result: 'success',
+      videos,
+    })
+  } catch (e) {
+    console.log(e)
+    return res.send({
+      result: 'failed',
+      message: e._message,
+    })
+  }
+}
 
 app.get('/getVideos', getAllVideos)
 app.post('/upload', postUploadVideo)
 app.post('/getvideo', getFindVideo)
 app.post('/videoEdit', postEditVideo)
 app.post('/videoDelete', postDeleteVideo)
+app.post('/videoSearch', postSearchVideo)
