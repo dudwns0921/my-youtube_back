@@ -1,29 +1,25 @@
 import VideoModel from '../models/Video'
 import app from '../server'
+import { formatHashtags } from '../utils/utils'
 
-const handleEditVideo = async (req, res) => {
+const postEditVideo = async (req, res) => {
   const data = req.body
   try {
-    const video = await VideoModel.findById(data.id)
-    video.title = data.title
-    video.description = data.description
-    video.hashtags = data.hashtags
-    await video.save()
+    await VideoModel.findByIdAndUpdate(data.id, {
+      title: data.title,
+      description: data.description,
+      hashtags: formatHashtags(data.hashtags),
+    })
     res.send({ result: 'success' })
   } catch (e) {
+    console.log(e)
     return res.send({
       result: 'failed',
       message: e._message,
     })
   }
 }
-
-app.get('/', handleGetAllVideos)
-app.post('/upload', handlePostVideo)
-app.post('/video/:id', handleFindVideo)
-app.post('/videoEdit/:id', handleEditVideo)
-
-async function handleGetAllVideos(req, res) {
+const getAllVideos = async (req, res) => {
   try {
     const videos = await VideoModel.find({})
     return res.send(videos)
@@ -31,14 +27,13 @@ async function handleGetAllVideos(req, res) {
     return res.send({ result: 'failed', message: e._message })
   }
 }
-
-async function handlePostVideo(req, res) {
+const postUploadVideo = async (req, res) => {
   const { title, description, hashtags } = req.body
   try {
     await VideoModel.create({
       title,
       description,
-      hashtags: hashtags.split(',').map((word) => `#${word}`),
+      hashtags: formatHashtags(hashtags),
     })
     return res.send({
       result: 'success',
@@ -50,8 +45,7 @@ async function handlePostVideo(req, res) {
     })
   }
 }
-
-async function handleFindVideo(req, res) {
+const getFindVideo = async (req, res) => {
   const { id } = req.body
   try {
     const video = await VideoModel.findById(id)
@@ -60,3 +54,24 @@ async function handleFindVideo(req, res) {
     return res.send(e)
   }
 }
+
+const postDeleteVideo = async (req, res) => {
+  const { id } = req.body
+  try {
+    await VideoModel.findOneAndDelete(id)
+    return res.send({
+      result: 'success',
+    })
+  } catch (e) {
+    return res.send({
+      result: 'failed',
+      message: e._message,
+    })
+  }
+}
+
+app.get('/getVideos', getAllVideos)
+app.post('/upload', postUploadVideo)
+app.post('/getvideo', getFindVideo)
+app.post('/videoEdit', postEditVideo)
+app.post('/videoDelete', postDeleteVideo)
