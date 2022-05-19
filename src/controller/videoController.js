@@ -1,5 +1,6 @@
 import VideoModel from '../models/Video'
 import app from '../server'
+import { authenticateToken } from '../utils/auth'
 import { formatHashtags } from '../utils/utils'
 
 const getFindAllVideos = async (req, res) => {
@@ -86,7 +87,7 @@ const postSearchVideo = async (req, res) => {
 }
 app.get('/videoFindAll', getFindAllVideos)
 app.post('/videoFind', postFindVideo)
-app.post('/videoUpload', postUploadVideo)
-app.post('/videoEdit', postEditVideo)
-app.post('/videoDelete', postDeleteVideo)
+app.post('/videoUpload', authenticateToken, postUploadVideo)
+app.post('/videoEdit', authenticateToken, postEditVideo)
+app.post('/videoDelete', authenticateToken, postDeleteVideo)
 app.post('/videoSearch', postSearchVideo)

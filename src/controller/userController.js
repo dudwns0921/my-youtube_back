@@ -1,6 +1,7 @@
 import UserModel from '../models/User'
 import app from '../server'
 import bcrypt from 'bcrypt'
+import { authenticateToken, generateAccessToken } from '../utils/auth'
 
 const postJoin = async (req, res) => {
   const { email, username, password } = req.body
@@ -40,12 +41,19 @@ const postLogin = async (req, res) => {
     const passwordCheck = await bcrypt.compare(password, dbUserData.password)
     if (dbUserData) {
       if (passwordCheck) {
-        req.session.loggedIn = true
-        req.session.user = dbUserData
-        res.send({ result: 'success' })
+        const token = generateAccessToken(dbUserData.email)
+        res.json({
+          token,
+          user: {
+            email: dbUserData.email,
+            username: dbUserData.username,
+          },
+          result: 'success',
+        })
       }
     }
   } catch (e) {
+    console.log(e)
     return res.send({
       result: 'failed',
     })
