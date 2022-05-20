@@ -39,6 +39,7 @@ const postUploadVideo = async (req, res) => {
 }
 const postEditVideo = async (req, res) => {
   const data = req.body
+  console.log(data)
   try {
     await VideoModel.findByIdAndUpdate(data.id, {
       title: data.title,

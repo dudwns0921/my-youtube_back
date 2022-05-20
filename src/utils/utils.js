@@ -1,5 +1,5 @@
-export const formatHashtags = (string) => {
-  return string.split(',').map((item) => {
+export const formatHashtags = (hashtags) => {
+  return hashtags.split(',').map((item) => {
     return `#${item}`
   })
 }

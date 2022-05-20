@@ -1,7 +1,7 @@
 import UserModel from '../models/User'
 import app from '../server'
 import bcrypt from 'bcrypt'
-import { authenticateToken, generateAccessToken } from '../utils/auth'
+import { generateAccessToken } from '../utils/auth'
 
 const postJoin = async (req, res) => {
   const { email, username, password } = req.body
