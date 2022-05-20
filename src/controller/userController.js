@@ -2,6 +2,7 @@ import UserModel from '../models/User'
 import app from '../server'
 import bcrypt from 'bcrypt'
 import { generateAccessToken } from '../utils/auth'
+import axios from 'axios'
 
 const postJoin = async (req, res) => {
   const { email, username, password } = req.body
@@ -42,7 +43,7 @@ const postLogin = async (req, res) => {
     if (dbUserData) {
       if (passwordCheck) {
         const token = generateAccessToken(dbUserData.email)
-        res.json({
+        return res.json({
           token,
           user: {
             email: dbUserData.email,
@@ -60,5 +61,65 @@ const postLogin = async (req, res) => {
   }
 }
 
+const postGithubLogin = async (req, res) => {
+  const baseUrl = 'https://github.com/login/oauth/access_token'
+  const config = {
+    client_id: process.env.GITHUB_CLIENT_ID,
+    client_secret: process.env.GITHUB_CLIENT_SECRET_KEY,
+    code: req.body.githubCode,
+  }
+  const params = new URLSearchParams(config).toString()
+  try {
+    const { data } = await axios({
+      method: 'post',
+      url: `${baseUrl}?${params}`,
+      headers: {
+        Accept: 'application/json',
+      },
+    })
+    if (data.access_token) {
+      const userData = await axios({
+        method: 'get',
+        url: 'https://api.github.com/user',
+        headers: {
+          Authorization: `token ${data.access_token}`,
+        },
+      })
+      console.log(userData)
+      const emailData = await axios({
+        method: 'get',
+        url: 'https://api.github.com/user/emails',
+        headers: {
+          Authorization: `token ${data.access_token}`,
+        },
+      })
+      console.log(emailData)
+      const username = userData.data.login
+      const userEmail = emailData.data.find(
+        (email) => email.primary === true,
+      ).email
+      if (UserModel.findOne({ email: userEmail })) {
+        return res.send({
+          result: 'failed',
+          message: 'Someone signed up with same email',
+        })
+      } else {
+        const token = generateAccessToken(userEmail)
+        return res.json({
+          token,
+          user: {
+            email: userEmail,
+            username,
+          },
+          result: 'success',
+        })
+      }
+    }
+  } catch (e) {
+    console.log(e)
+  }
+}
+
 app.post('/join', postJoin)
 app.post('/login', postLogin)
+app.post('/githubLogin', postGithubLogin)
