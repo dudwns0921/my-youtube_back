@@ -15,7 +15,8 @@ const postFindVideo = async (req, res) => {
   const { id } = req.body
   try {
     const video = await VideoModel.findById(id)
-    return res.send(video)
+    console.log(video)
+    return res.json(video)
   } catch (e) {
     return res.status(400).send(e)
   }
@@ -38,7 +39,7 @@ const postUploadVideo = async (req, res) => {
   }
 }
 const postEditVideo = async (req, res) => {
-  const data = req.body
+  const { data } = req.body
   try {
     await VideoModel.findByIdAndUpdate(data.id, {
       title: data.title,

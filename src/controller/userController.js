@@ -54,7 +54,7 @@ const postLogin = async (req, res) => {
       }
     }
   } catch (e) {
-    console.log(e)
+    console.log('error', e)
     return res.send({
       result: 'failed',
     })
@@ -85,7 +85,6 @@ const postGithubLogin = async (req, res) => {
           Authorization: `token ${data.access_token}`,
         },
       })
-      console.log(userData)
       const emailData = await axios({
         method: 'get',
         url: 'https://api.github.com/user/emails',
@@ -93,12 +92,13 @@ const postGithubLogin = async (req, res) => {
           Authorization: `token ${data.access_token}`,
         },
       })
-      console.log(emailData)
       const username = userData.data.login
       const userEmail = emailData.data.find(
         (email) => email.primary === true,
       ).email
-      if (UserModel.findOne({ email: userEmail })) {
+      const checkUserexists = await UserModel.findOne({ email: userEmail })
+
+      if (checkUserexists) {
         return res.send({
           result: 'failed',
           message: 'Someone signed up with same email',
