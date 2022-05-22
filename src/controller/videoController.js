@@ -6,19 +6,18 @@ import { formatHashtags } from '../utils/utils'
 const getFindAllVideos = async (req, res) => {
   try {
     const videos = await VideoModel.find({})
-    return res.send(videos)
+    return res.json(videos)
   } catch (e) {
-    return res.status(400).send({ result: 'failed' })
+    return res.status(400).json({ result: 'failed' })
   }
 }
 const postFindVideo = async (req, res) => {
   const { id } = req.body
   try {
     const video = await VideoModel.findById(id)
-    console.log(video)
     return res.json(video)
   } catch (e) {
-    return res.status(400).send(e)
+    return res.status(400).json(e)
   }
 }
 const postUploadVideo = async (req, res) => {
@@ -29,11 +28,11 @@ const postUploadVideo = async (req, res) => {
       description,
       hashtags: formatHashtags(hashtags),
     })
-    return res.send({
+    return res.json({
       result: 'success',
     })
   } catch (e) {
-    return res.status(400).send({
+    return res.status(400).json({
       result: 'failed',
     })
   }
@@ -46,10 +45,10 @@ const postEditVideo = async (req, res) => {
       description: data.description,
       hashtags: formatHashtags(data.hashtags),
     })
-    res.send({ result: 'success' })
+    res.json({ result: 'success' })
   } catch (e) {
     console.log(e)
-    return res.status(400).send({
+    return res.status(400).json({
       result: 'failed',
     })
   }
@@ -58,11 +57,11 @@ const postDeleteVideo = async (req, res) => {
   const { id } = req.body
   try {
     await VideoModel.findOneAndDelete(id)
-    return res.send({
+    return res.json({
       result: 'success',
     })
   } catch (e) {
-    return res.status(400).send({
+    return res.status(400).json({
       result: 'failed',
     })
   }
@@ -75,13 +74,13 @@ const postSearchVideo = async (req, res) => {
         $regex: new RegExp(keyword, 'i'),
       },
     })
-    return res.send({
+    return res.json({
       result: 'success',
       videos,
     })
   } catch (e) {
     console.log(e)
-    return res.status(400).send({
+    return res.status(400).json({
       result: 'failed',
     })
   }
