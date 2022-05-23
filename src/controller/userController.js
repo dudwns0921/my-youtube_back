@@ -32,6 +32,7 @@ const postJoin = async (req, res) => {
   } catch (e) {
     return res.json({
       result: 'failed',
+      message: e,
     })
   }
 }
@@ -157,16 +158,16 @@ const postCheckUserData = async (req, res) => {
 }
 
 const postEditUser = async (req, res) => {
-  const { oldEmail, newEmail, newUsername } = req.body
+  const { oldEmail, oldUsername, newEmail, newUsername } = req.body
   try {
     const emailExists = await UserModel.exists({ email: newEmail })
     const usernameExists = await UserModel.exists({ username: newUsername })
-    if (emailExists) {
+    if (oldEmail !== newEmail && emailExists) {
       return res.status(400).json({
         isDuplicated: true,
       })
     }
-    if (usernameExists) {
+    if (oldUsername !== newUsername && usernameExists) {
       return res.status(400).json({
         isDuplicated: true,
       })
@@ -192,9 +193,34 @@ const postEditUser = async (req, res) => {
   }
 }
 
+const postEditUserPwd = async (req, res) => {
+  const { newPassword, userEmail } = req.body
+  await UserModel.findOneAndUpdate(
+    { email: userEmail },
+    { password: await bcrypt.hash(newPassword, 5) },
+    {
+      fields: {
+        password: true,
+      },
+    },
+  )
+  const DBUserData = await UserModel.findOne({ email: userEmail })
+  const checkNewPassword = await bcrypt.compare(
+    newPassword,
+    DBUserData.password,
+  )
+  if (checkNewPassword) {
+    return res.json({
+      result: 'success',
+      message: 'password modified',
+    })
+  }
+}
+
 app.post('/join', postJoin)
 app.post('/login', postLogin)
 app.post('/githubLogin', postGithubLogin)
 app.post('/checkPassword', postCheckPassword)
 app.post('/checkUserData', postCheckUserData)
 app.post('/editUser', postEditUser)
+app.post('/editUserPwd', postEditUserPwd)
