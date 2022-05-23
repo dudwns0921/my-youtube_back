@@ -3,6 +3,9 @@ import app from '../server'
 import bcrypt from 'bcrypt'
 import { generateAccessToken } from '../utils/auth'
 import axios from 'axios'
+import multer from 'multer'
+
+const upload = multer({ dest: 'uploads/' }).single('avartar')
 
 const postJoin = async (req, res) => {
   const { email, username, password } = req.body
@@ -49,6 +52,7 @@ const postLogin = async (req, res) => {
           user: {
             email: dbUserData.email,
             username: dbUserData.username,
+            avartarURL: dbUserData.avartarURL,
           },
           result: 'success',
         })
@@ -158,7 +162,9 @@ const postCheckUserData = async (req, res) => {
 }
 
 const postEditUser = async (req, res) => {
-  const { oldEmail, oldUsername, newEmail, newUsername } = req.body
+  const avartarFile = req.file
+  const { oldEmail, oldUsername, oldAvartartURL, newEmail, newUsername } =
+    req.body
   try {
     const emailExists = await UserModel.exists({ email: newEmail })
     const usernameExists = await UserModel.exists({ username: newUsername })
@@ -174,17 +180,23 @@ const postEditUser = async (req, res) => {
     }
     await UserModel.findOneAndUpdate(
       { email: oldEmail },
-      { email: newEmail, username: newUsername },
+      {
+        email: newEmail,
+        username: newUsername,
+        avartarURL: avartarFile ? avartarFile.path : oldAvartartURL,
+      },
       {
         fields: {
           email: true,
           username: true,
+          avartarURL: true,
         },
       },
     )
     const newDBUserData = await UserModel.findOne({ email: newEmail })
     return res.json({
       userData: newDBUserData,
+      // 이후 password 제외한 상태로 수정 필요
     })
   } catch (e) {
     return res.json({
@@ -222,5 +234,5 @@ app.post('/login', postLogin)
 app.post('/githubLogin', postGithubLogin)
 app.post('/checkPassword', postCheckPassword)
 app.post('/checkUserData', postCheckUserData)
-app.post('/editUser', postEditUser)
+app.post('/editUser', upload, postEditUser)
 app.post('/editUserPwd', postEditUserPwd)
