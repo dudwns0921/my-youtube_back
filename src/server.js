@@ -8,5 +8,6 @@ app.use(morgan('dev'))
 app.use(cors())
 app.use(express.json())
 app.use('/uploads', express.static('uploads'))
+app.use('/static', express.static('src/static'))
 
 export default app
