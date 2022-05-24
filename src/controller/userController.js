@@ -5,7 +5,12 @@ import { generateAccessToken } from '../utils/auth'
 import axios from 'axios'
 import multer from 'multer'
 
-const upload = multer({ dest: 'uploads/' }).single('avartar')
+const uploadAvatar = multer({
+  dest: 'uploads/avatars',
+  limits: {
+    fileSize: 300000,
+  },
+}).single('avatar')
 
 const postJoin = async (req, res) => {
   const { email, username, password } = req.body
@@ -33,10 +38,7 @@ const postJoin = async (req, res) => {
       result: 'success',
     })
   } catch (e) {
-    return res.json({
-      result: 'failed',
-      message: e,
-    })
+    console.log(e)
   }
 }
 const postLogin = async (req, res) => {
@@ -52,17 +54,15 @@ const postLogin = async (req, res) => {
           user: {
             email: dbUserData.email,
             username: dbUserData.username,
-            avartarURL: dbUserData.avartarURL,
+            avatarURL: dbUserData.avatarURL,
+            isSocial: false,
           },
           result: 'success',
         })
       }
     }
   } catch (e) {
-    return res.json({
-      result: 'failed',
-      message: e,
-    })
+    console.log(e)
   }
 }
 
@@ -97,6 +97,7 @@ const postGithubLogin = async (req, res) => {
           Authorization: `token ${data.access_token}`,
         },
       })
+      const userAvatarURL = userData.data.avatar_url
       const username = userData.data.login
       const userEmail = emailData.data.find(
         (email) => email.primary === true && email.verified === true,
@@ -122,6 +123,8 @@ const postGithubLogin = async (req, res) => {
           user: {
             email: userEmail,
             username,
+            avatarURL: userAvatarURL,
+            isSocial: true,
           },
           result: 'success',
         })
@@ -162,8 +165,8 @@ const postCheckUserData = async (req, res) => {
 }
 
 const postEditUser = async (req, res) => {
-  const avartarFile = req.file
-  const { oldEmail, oldUsername, oldAvartartURL, newEmail, newUsername } =
+  const avatarFile = req.file
+  const { oldEmail, oldUsername, oldAvatartURL, newEmail, newUsername } =
     req.body
   try {
     const emailExists = await UserModel.exists({ email: newEmail })
@@ -183,13 +186,13 @@ const postEditUser = async (req, res) => {
       {
         email: newEmail,
         username: newUsername,
-        avartarURL: avartarFile ? avartarFile.path : oldAvartartURL,
+        avatarURL: avatarFile ? avatarFile.path : oldAvatartURL,
       },
       {
         fields: {
           email: true,
           username: true,
-          avartarURL: true,
+          avatarURL: true,
         },
       },
     )
@@ -199,9 +202,7 @@ const postEditUser = async (req, res) => {
       // 이후 password 제외한 상태로 수정 필요
     })
   } catch (e) {
-    return res.json({
-      message: e,
-    })
+    console.log(e)
   }
 }
 
@@ -234,5 +235,5 @@ app.post('/login', postLogin)
 app.post('/githubLogin', postGithubLogin)
 app.post('/checkPassword', postCheckPassword)
 app.post('/checkUserData', postCheckUserData)
-app.post('/editUser', upload, postEditUser)
+app.post('/editUser', uploadAvatar, postEditUser)
 app.post('/editUserPwd', postEditUserPwd)

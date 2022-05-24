@@ -2,6 +2,14 @@ import VideoModel from '../models/Video'
 import app from '../server'
 import { authenticateToken } from '../utils/auth'
 import { formatHashtags } from '../utils/utils'
+import multer from 'multer'
+
+const uploadVideo = multer({
+  dest: 'uploads/videos',
+  limits: {
+    fileSize: 10000000,
+  },
+}).single('videoFile')
 
 const getFindAllVideos = async (req, res) => {
   try {
@@ -21,9 +29,11 @@ const postFindVideo = async (req, res) => {
   }
 }
 const postUploadVideo = async (req, res) => {
+  const videoFile = req.file
   const { title, description, hashtags } = req.body
   try {
     await VideoModel.create({
+      videoURL: videoFile.path,
       title,
       description,
       hashtags: formatHashtags(hashtags),
@@ -38,9 +48,11 @@ const postUploadVideo = async (req, res) => {
   }
 }
 const postEditVideo = async (req, res) => {
+  const videoFile = req.file
   const { data } = req.body
   try {
     await VideoModel.findByIdAndUpdate(data.id, {
+      videoURL: videoFile.path,
       title: data.title,
       description: data.description,
       hashtags: formatHashtags(data.hashtags),
@@ -87,7 +99,7 @@ const postSearchVideo = async (req, res) => {
 }
 app.get('/videoFindAll', getFindAllVideos)
 app.post('/videoFind', postFindVideo)
-app.post('/videoUpload', authenticateToken, postUploadVideo)
-app.post('/videoEdit', authenticateToken, postEditVideo)
+app.post('/videoUpload', authenticateToken, uploadVideo, postUploadVideo)
+app.post('/videoEdit', authenticateToken, uploadVideo, postEditVideo)
 app.post('/videoDelete', authenticateToken, postDeleteVideo)
 app.post('/videoSearch', postSearchVideo)
