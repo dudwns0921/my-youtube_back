@@ -56,6 +56,7 @@ const postLogin = async (req, res) => {
             username: dbUserData.username,
             avatarURL: dbUserData.avatarURL,
             isSocial: false,
+            id: dbUserData._id,
           },
           result: 'success',
         })
@@ -97,8 +98,7 @@ const postGithubLogin = async (req, res) => {
           Authorization: `token ${data.access_token}`,
         },
       })
-      const userAvatarURL = userData.data.avatar_url
-      const username = userData.data.login
+      // verified된 이메일만을 찾기 위해 변수 생성
       const userEmail = emailData.data.find(
         (email) => email.primary === true && email.verified === true,
       ).email
@@ -121,9 +121,10 @@ const postGithubLogin = async (req, res) => {
         return res.json({
           token,
           user: {
+            id: userData.data.id,
             email: userEmail,
-            username,
-            avatarURL: userAvatarURL,
+            username: userData.data.login,
+            avatarURL: userData.data.avatar_url,
             isSocial: true,
           },
           result: 'success',
