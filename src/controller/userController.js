@@ -167,6 +167,7 @@ const postCheckUserData = async (req, res) => {
 
 const postEditUser = async (req, res) => {
   const avatarFile = req.file
+  console.log(req.file)
   const { oldEmail, oldUsername, oldAvatartURL, newEmail, newUsername } =
     req.body
   try {
