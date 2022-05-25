@@ -31,6 +31,7 @@ const postFindVideo = async (req, res) => {
 const postUploadVideo = async (req, res) => {
   const videoFile = req.file
   const { title, description, hashtags, ownerId } = req.body
+
   try {
     await VideoModel.create({
       videoURL: videoFile.path,
@@ -43,17 +44,13 @@ const postUploadVideo = async (req, res) => {
       result: 'success',
     })
   } catch (e) {
-    return res.status(400).json({
-      result: 'failed',
-    })
+    console.log(e)
   }
 }
 const postEditVideo = async (req, res) => {
-  const videoFile = req.file
-  const { data } = req.body
+  const data = req.body
   try {
     await VideoModel.findByIdAndUpdate(data.id, {
-      videoURL: videoFile.path,
       title: data.title,
       description: data.description,
       hashtags: formatHashtags(data.hashtags),

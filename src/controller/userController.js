@@ -200,7 +200,11 @@ const postEditUser = async (req, res) => {
     )
     const newDBUserData = await UserModel.findOne({ email: newEmail })
     return res.json({
-      userData: newDBUserData,
+      id: newDBUserData._id,
+      email: newDBUserData.email,
+      username: newDBUserData.username,
+      avatarURL: newDBUserData.avatarURL,
+      isSocial: newDBUserData.isSocial,
       // 이후 password 제외한 상태로 수정 필요
     })
   } catch (e) {
