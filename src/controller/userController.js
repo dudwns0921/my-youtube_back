@@ -51,11 +51,11 @@ const postLogin = async (req, res) => {
         const token = generateAccessToken(dbUserData.email)
         return res.json({
           token,
-          user: {
+          userData: {
             email: dbUserData.email,
             username: dbUserData.username,
             avatarURL: dbUserData.avatarURL,
-            isSocial: false,
+            isSocial: dbUserData.isSocial,
             id: dbUserData._id,
           },
           result: 'success',
