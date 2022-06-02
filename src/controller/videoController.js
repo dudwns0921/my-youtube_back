@@ -30,7 +30,7 @@ const postFindVideo = async (req, res) => {
 }
 const postUploadVideo = async (req, res) => {
   const videoFile = req.file
-  const { title, description, hashtags, ownerId } = req.body
+  const { title, description, hashtags, owner } = req.body
 
   try {
     await VideoModel.create({
@@ -38,7 +38,7 @@ const postUploadVideo = async (req, res) => {
       title,
       description,
       hashtags: formatHashtags(hashtags),
-      ownerId,
+      owner,
     })
     return res.json({
       result: 'success',
@@ -97,8 +97,8 @@ const postSearchVideo = async (req, res) => {
 }
 
 const postFindMyVideos = async (req, res) => {
-  const { userId: ownerId } = req.body
-  const myVideos = await VideoModel.find({ ownerId })
+  const { username } = req.body
+  const myVideos = await VideoModel.find({ owner: username })
   return res.json(myVideos)
 }
 app.get('/videoFindAll', getFindAllVideos)
